@@ -1,35 +1,44 @@
 import cv2
-import numpy as np
 
 
-img = cv2.imread("image.png")
-cv2.imshow("test", img)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+def take_frame():
+    cam = cv2.VideoCapture(0)
+    ret, frame = cam.read()
+    cv2.imwrite("webcamphoto.png", frame)
+    cam.release()
 
-hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-lower_bound = np.array([0, 100, 100])
-upper_bound = np.array([13, 255, 255])
-mask = cv2.inRange(hsv, lower_bound, upper_bound)
-cv2.imshow("test", mask)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
 
-kernel = np.ones((7,7),np.uint8)
-mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-cv2.imshow("test", mask)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+savedOrCamera = input("Do you want to use a saved image or take an image from your webcam ")
+savedOrCamera = savedOrCamera.lower()
+if savedOrCamera == "saved image":
+    image = cv2.imread("image.png")
+elif savedOrCamera == "webcam":
+    take_frame()
+    image = cv2.imread("webcamphoto.png")
 
-segmented_img = cv2.bitwise_and(img, img, mask=mask)
-cv2.imshow("test", segmented_img)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
 
-contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-output = cv2.drawContours(segmented_img, contours, -1, (0, 0, 255), 3)
+def click_event(event, x, y, flags, params):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print(x, y)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.putText(image, str(x) + ", " + str(y), (x, y), font, 1, (255, 0, 0), 2)
+        cv2.imshow("image", image)
+    elif event == cv2.EVENT_RBUTTONDOWN:
+        print(x, ' ', y)
+        b = image[y, x, 0]
+        g = image[y, x, 1]
+        r = image[y, x, 2]
+        print(r, g, b)
+        if r <= 255 and g >= 0 and b >= 0 and r >= 100 and g <= 75 and b <= 100:
+            print("red")
+        elif r <= 175 and g >= 20 and b >= 0 and r >= 0 and g <= 200 and b <= 200:
+            print("blue")
+        elif  r <= 255 and g >= 130 and b >= 130 and r >= 130 and g <= 255 and b <= 255:
+            print("white")
 
-cv2.imshow("Output", output)
+
+image = cv2.resize(image, (1047, 432))
+cv2.imshow("image", image)
+cv2.setMouseCallback("image", click_event)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
