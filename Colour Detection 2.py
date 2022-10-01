@@ -1,6 +1,20 @@
 import cv2
 
-image = cv2.imread("image.png")
+
+def take_frame():
+    cam = cv2.VideoCapture(0)
+    ret, frame = cam.read()
+    cv2.imwrite("webcamphoto.png", frame)
+    cam.release()
+
+
+savedOrCamera = input("Do you want to use a saved image or take an image from your webcam ")
+savedOrCamera = savedOrCamera.lower()
+if savedOrCamera == "saved image":
+    image = cv2.imread("image.png")
+elif savedOrCamera == "webcam":
+    take_frame()
+    image = cv2.imread("webcamphoto.png")
 
 
 def click_event(event, x, y, flags, params):
